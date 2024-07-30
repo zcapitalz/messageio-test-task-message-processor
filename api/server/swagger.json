@@ -1,0 +1,140 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API to store and retreive market data",
+        "title": "Market info storage",
+        "contact": {},
+        "version": "1.0"
+    },
+    "basePath": "/",
+    "paths": {
+        "/messages": {
+            "post": {
+                "description": "Saves and process message.",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Message"
+                ],
+                "summary": "Save Message",
+                "parameters": [
+                    {
+                        "description": "Message data",
+                        "name": "orderBook",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_controllers_message.saveMessageRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/message-processor_internal_controllers_httputils.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/message-processor_internal_controllers_httputils.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/messages/processing/stats": {
+            "get": {
+                "description": "Get message processing statistics within a specified time range",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Message"
+                ],
+                "summary": "Get message processing stats",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Start time for the stats query",
+                        "name": "startTime",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "End time for the stats query",
+                        "name": "endTime",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_controllers_message.getMessageProcessingStatsResponseBody"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/message-processor_internal_controllers_httputils.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/message-processor_internal_controllers_httputils.HTTPError"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "internal_controllers_message.getMessageProcessingStatsResponseBody": {
+            "type": "object",
+            "properties": {
+                "stats": {
+                    "$ref": "#/definitions/message-processor_internal_domain.MessageProcessingStats"
+                }
+            }
+        },
+        "internal_controllers_message.saveMessageRequestBody": {
+            "type": "object",
+            "required": [
+                "message"
+            ],
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "message-processor_internal_controllers_httputils.HTTPError": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "message-processor_internal_domain.MessageProcessingStats": {
+            "type": "object",
+            "properties": {
+                "processedTotal": {
+                    "type": "integer"
+                },
+                "savedTotal": {
+                    "type": "integer"
+                }
+            }
+        }
+    }
+}

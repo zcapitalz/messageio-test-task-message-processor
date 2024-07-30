@@ -1,0 +1,82 @@
+services:
+  server:
+    container_name: 'message-processor-server'
+    build:
+      context: ../..
+      dockerfile: ./Dockerfile-server
+    restart: unless-stopped 
+    depends_on:
+      - postgres
+      - kafka
+    networks:
+      - network
+    volumes:
+      - ${KAFKA_SSL_SECRETS_DIR}:/etc/kafka/secrets:ro
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: postgres
+    ports:
+      - ${HTTP_SERVER_PORT}:${HTTP_SERVER_PORT}
+
+  postgres:
+    container_name: message-processor-postgres
+    image: postgres:16
+    networks:
+      - network
+    ports:
+    - ${POSTGRES_PORT}:5432
+    volumes:
+      - ../migrations/postgres/000001_init.up.sql:/docker-entrypoint-initdb.d/000001_init.up.sql:ro
+    environment:
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB_NAME}
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.2
+    restart: always
+    hostname: zookeeper
+    container_name: 'message-processor-zookeeper'
+    healthcheck:
+      test: echo srvr | nc zookeeper 2181 || exit 1
+      retries: 20
+      interval: 10s
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    ports:
+      - 22181:2181
+    networks:
+      - network
+
+  kafka:
+    container_name: 'message-processor-kafka-1'
+    image: confluentinc/cp-kafka:7.6.2
+    depends_on:
+      - zookeeper
+    networks:
+      - network
+    volumes:
+      - ${KAFKA_SSL_SECRETS_DIR}:/etc/kafka/secrets:ro
+    ports:
+      - "9092:${KAFKA_CLIENT_PORT}"
+      - "8082:${KAFKA_REST_PROXY}"
+    environment:
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: ${KAFKA_AUTO_CREATE_TOPICS_ENABLE}
+      KAFKA_BROKER_ID: ${KAFKA_BROKER_ID}
+      KAFKA_ZOOKEEPER_CONNECT: ${KAFKA_ZOOKEEPER_CONNECT}
+      KAFKA_ADVERTISED_LISTENERS: ${KAFKA_ADVERTISED_LISTENERS}
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: ${KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR}
+      KAFKA_SSL_KEYSTORE_FILENAME: ${KAFKA_SSL_KEYSTORE_FILENAME}
+      KAFKA_SSL_KEYSTORE_CREDENTIALS: ${KAFKA_SSL_KEYSTORE_CREDENTIALS}
+      KAFKA_SSL_KEY_CREDENTIALS: ${KAFKA_SSL_KEY_CREDENTIALS}
+      KAFKA_SSL_TRUSTSTORE_FILENAME: ${KAFKA_SSL_TRUSTSTORE_FILENAME}
+      KAFKA_SSL_TRUSTSTORE_CREDENTIALS: ${KAFKA_SSL_TRUSTSTORE_CREDENTIALS}
+      KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: " "
+      KAFKA_SSL_CLIENT_AUTH: requested
+      KAFKA_SECURITY_INTER_BROKER_PROTOCOL: SSL
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: true
+
+networks:
+  network:
+    driver: bridge

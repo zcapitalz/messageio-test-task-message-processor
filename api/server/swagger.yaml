@@ -1,0 +1,91 @@
+basePath: /
+definitions:
+  internal_controllers_message.getMessageProcessingStatsResponseBody:
+    properties:
+      stats:
+        $ref: '#/definitions/message-processor_internal_domain.MessageProcessingStats'
+    type: object
+  internal_controllers_message.saveMessageRequestBody:
+    properties:
+      message:
+        type: string
+    required:
+    - message
+    type: object
+  message-processor_internal_controllers_httputils.HTTPError:
+    properties:
+      error:
+        type: string
+    type: object
+  message-processor_internal_domain.MessageProcessingStats:
+    properties:
+      processedTotal:
+        type: integer
+      savedTotal:
+        type: integer
+    type: object
+info:
+  contact: {}
+  description: API to store and retreive market data
+  title: Market info storage
+  version: "1.0"
+paths:
+  /messages:
+    post:
+      consumes:
+      - application/json
+      description: Saves and process message.
+      parameters:
+      - description: Message data
+        in: body
+        name: orderBook
+        required: true
+        schema:
+          $ref: '#/definitions/internal_controllers_message.saveMessageRequestBody'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/message-processor_internal_controllers_httputils.HTTPError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/message-processor_internal_controllers_httputils.HTTPError'
+      summary: Save Message
+      tags:
+      - Message
+  /messages/processing/stats:
+    get:
+      description: Get message processing statistics within a specified time range
+      parameters:
+      - description: Start time for the stats query
+        in: query
+        name: startTime
+        required: true
+        type: string
+      - description: End time for the stats query
+        in: query
+        name: endTime
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_controllers_message.getMessageProcessingStatsResponseBody'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/message-processor_internal_controllers_httputils.HTTPError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/message-processor_internal_controllers_httputils.HTTPError'
+      summary: Get message processing stats
+      tags:
+      - Message
+swagger: "2.0"

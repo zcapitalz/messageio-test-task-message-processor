@@ -1,0 +1,17 @@
+services:
+  processor:
+    container_name: 'message-processor'
+    build:
+      context: ../..
+      dockerfile: ./Dockerfile-processor
+    restart: unless-stopped 
+    volumes:
+      - ${KAFKA_SSL_SECRETS_DIR}:/etc/kafka/secrets:ro
+    env_file:
+      - .env
+    networks:
+      - server_network
+
+networks:
+  server_network:
+    external: true
