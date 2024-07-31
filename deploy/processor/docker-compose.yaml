@@ -6,7 +6,7 @@ services:
       dockerfile: ./Dockerfile-processor
     restart: unless-stopped 
     volumes:
-      - ${KAFKA_SSL_SECRETS_DIR}:/etc/kafka/secrets:ro
+      - ${KAFKA_SSL_SECRETS_HOST_DIR}:/etc/kafka/secrets:ro
     env_file:
       - .env
     networks:

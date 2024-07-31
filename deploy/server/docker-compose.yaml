@@ -11,7 +11,7 @@ services:
     networks:
       - network
     volumes:
-      - ${KAFKA_SSL_SECRETS_DIR}:/etc/kafka/secrets:ro
+      - ${KAFKA_SSL_SECRETS_HOST_DIR}:/etc/kafka/secrets:ro
     env_file:
       - .env
     environment:
@@ -57,7 +57,7 @@ services:
     networks:
       - network
     volumes:
-      - ${KAFKA_SSL_SECRETS_DIR}:/etc/kafka/secrets:ro
+      - ${KAFKA_SSL_SECRETS_HOST_DIR}:/etc/kafka/secrets:ro
     ports:
       - "9092:${KAFKA_CLIENT_PORT}"
       - "8082:${KAFKA_REST_PROXY}"
